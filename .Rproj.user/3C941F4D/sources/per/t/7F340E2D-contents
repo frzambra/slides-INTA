@@ -1,0 +1,345 @@
+#
+# This is the server logic of a Shiny web application. You can run the
+# application by clicking 'Run App' above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    http://shiny.rstudio.com/
+#
+
+library(shiny)
+library(sf)
+library(stars)
+library(ggplot2)
+library(tibble)
+library(lubridate)
+library(tidyr)
+library(dplyr)
+library(dplyr)
+library(shinyalert)
+library(leaflet)
+library(RColorBrewer)
+library(htmltools)
+library(rgdal)
+library(leaflet.extras)
+library(leafem)
+
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
+    
+  shinyalert(
+    title = NULL,
+    text = tagList(
+      h5('Monitoreo Satelital de Vegetación '),
+      h5('Proyecto Fondecyt N°1210526 '),
+      fluidRow(tags$img(src = "https://postgrado.agronomia.uc.cl/images/simposio/FAIF_UC.jpg",height=60)),
+      fluidRow(tags$img(src = "https://i.ibb.co/W05VNqL/logo-hemera-umayor.png",height = 40))
+      ),
+    size = "s", 
+    closeOnEsc = FALSE,
+    closeOnClickOutside = FALSE,
+    html = TRUE,
+    #type = "success",
+    showConfirmButton = FALSE,
+    showCancelButton = FALSE,
+    timer = 6000,
+    imageUrl = "",
+    animation = TRUE
+  )
+  
+  output$user <- renderUser({
+    dashboardUser(
+      name = "Francisco Zambrano", 
+      image = "https://scholar.googleusercontent.com/citations?view_op=medium_photo&user=mKQRdOEAAAAJ&citpid=3", 
+      subtitle = "Desarollador", 
+      #footer = p("The footer", class = "text-center"),
+      fluidRow(
+        dashboardUserItem(
+          width = 3,
+          socialButton(
+            href = "mailto:francisco.zambrano@umayor.cl",
+            icon = icon("user-graduate")
+            )
+        ),
+        dashboardUserItem(
+          width = 9,
+         tagList(
+           tags$img(src = "https://i.ibb.co/W05VNqL/logo-hemera-umayor.png",
+                    height=40)
+         ))
+      )
+    )
+  })
+
+ 
+    source('R/helper.R')
+    sitios <- c('pirque','garces-silva','chacabuco')
+    
+    rv <- reactiveValues()
+    rv$m <- NULL
+    rv$p <- NULL
+    
+    observeEvent(input$tabs,{
+      if (input$tabs == 'cluster') {
+        shinyalert(
+          title = 'En preparación',
+          size = "s", 
+          closeOnEsc = TRUE,
+          closeOnClickOutside = TRUE,
+          html = TRUE,
+          type = "info",
+          showConfirmButton = FALSE,
+          showCancelButton = FALSE,
+          imageUrl = "",
+          animation = TRUE
+        )
+      }
+    })
+      
+    reacPts <- eventReactive(input$selectSite, {
+        ptos <- list(matrix(c(-70.50470,-33.70123,-70.50453,-33.70173),byrow = TRUE, ncol = 2), #pirque
+                     matrix(c(-71.5087,-33.6778,
+                              -71.5078,-33.6774,
+                              -71.5068,-33.67704,
+                              -71.5092,-33.6782,
+                              -71.5079,-33.6770,
+                              -71.5072,-33.6772),byrow = TRUE,ncol = 2), #garces-silva
+                     matrix(c(-70.6644,-33.0200,
+                              -70.6644,-33.02142),byrow = TRUE,ncol = 2))
+
+        ptosM <- st_sfc(st_multipoint(ptos[[as.numeric(input$selectSite)]]),crs=4326)
+        ptosM <- st_as_sf(data.frame(st_coordinates(st_zm(ptosM))[,1:2]),coords = c('X','Y'),crs = 4326)
+        ptosM$zona <- 1:length(ptosM$geometry)
+        
+        return(ptosM)
+        
+    })
+    
+    reactMap <- reactive({
+ 
+        sitio <- sitios[as.numeric(input$selectSite)]
+        index <- tolower(input$VI)
+        date <- input$selecdateS2
+        mapVIdate(sitio,index,date)
+    })
+    
+    reactSpectral <- reactive({
+      sitio <- sitios[as.numeric(input$selectSite)]
+      index <- tolower(input$VI)
+      ptos <- reacPts()[as.numeric(input$selectZone),]
+      date <- input$selecdateS2
+      dataSpec <- getSpectral(sitio,index,ptos,date)
+    })
+    
+    reactDataS <- reactive({
+      sitio <- sitios[as.numeric(input$selectSite)]
+      index <- tolower(input$VI)
+      if(is.null(input$selectZone)) zone <- 1 else zone <- input$selectZone 
+
+        
+      ptos <- reacPts()[zone,]
+      mes1 <- input$mesIniTem
+      meses <- seq(as.Date("2017-01-01"),as.Date("2017-12-01"),by='month')
+      id <- match(mes1,format(meses,'%b'))
+      temporada = c(meses[id],meses[id]+365)
+      
+            
+      #temporada <- c(as.Date("2017-01-01","%Y-%m-%d"), as.Date("2018-12-01","%Y-%m-%d"))
+      data <- seasonPlotData(sitio,index,ptos,seas_dates=temporada)
+      ls <- loess(zona~as.numeric(dates),data,span=0.1)
+      data$loess <- predict(ls,data)
+      data <- data %>% filter(!is.na(temporada))
+      return(data)
+    }) 
+    
+    output$selectZone <- renderUI({
+  
+        selectInput("selectZone", 
+                    label = h5("Zona"),
+                    choices = reacPts()$zona, 
+                    selected = 1)
+    })
+    
+    output$sliderSeason <- renderUI({
+      sliderTextInput(
+        inputId = "mesIniTem",
+        label = "Mes inicio temporada", 
+        choices = format(seq(as.Date("2020-01-01"),as.Date("2020-12-01"),'month'),"%b")
+      )
+    })
+    
+    output$downSeriesHand <- downloadHandler(
+      filename = function() {
+        paste("datos_", input$VI,'_',Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        data <- reactDataS()
+        data %>% 
+          select(dates,zona,temporada,loess) %>% 
+          rename(valor = zona) %>% 
+          write.csv2(file)
+        }
+      )
+    
+    output$downSeries <- renderUI({
+      downloadButton("downSeriesHand", label = 'Descargar datos', class = "download_this")
+    
+    })
+    
+    output$downSatHand <- downloadHandler(
+      filename = function() {
+        sitio <- sitios[as.numeric(input$selectSite)]
+
+        paste0(input$VI,'_',sitio,'_',input$selecdateS2, ".tif")
+      },
+      content = function(dsn) {
+        vi <- reactMap()[[1]]
+        
+        stars::write_stars(vi,dsn=dsn)
+      }
+    )
+    output$downVI <- renderUI({
+      downloadButton("downSatHand", label = 'Descargar', class = "download_this")
+      
+    })
+    output$dateS2 <- renderUI({
+      dates <- readRDS('data/dates.rds')
+      allDates <- seq(as.Date("2017-01-01"),as.Date("2022-03-11"),by = 1)
+      ix <- which(!(allDates %in% dates))
+      dateInput('selecdateS2',
+                label = 'Fecha imagen',
+                language = 'es',
+                min = as.Date("2017-01-01"),
+                max = as.Date("2022-03-11"),
+                value = '2022-03-09',
+                datesdisabled = allDates[ix]
+                )
+    })
+    
+    # output$PlotIV <- renderPlot({
+    #     sitio <- sitios[as.numeric(input$selectSite)]
+    #     index <- tolower(input$VI)
+    #     print(index)
+    #     data <- seasonPlotData(sitio,index,reacPts(),seas_dates=input$temporada)
+    #     ggplot(data,aes(new_dates,zona,colour=temporada)) +
+    #         geom_point() +
+    #         scale_x_date(limits = seas_dates) +
+    #         geom_smooth(se=FALSE,span = 0.3)
+    # 
+    # })
+    output$plotSpectral <- renderHighchart({
+      print(input$selectZone)
+      highchart() %>%
+        hc_add_series(
+          type="line",
+          marker=list(enabled=T),
+          data=reactSpectral(),
+          mapping=hcaes(x=band, y=vals),
+        ) %>% 
+        hc_xAxis(categories = reactSpectral()$band) 
+    })
+    
+    output$PlotIV<- renderHighchart({
+        data <- reactDataS()
+        
+        highchart() %>%
+            hc_add_series(
+                type="point",
+                marker=list(enabled=T),
+                data=data,
+                mapping=hcaes(x=new_dates, y=zona, group=temporada),
+            ) %>% 
+            hc_add_series(
+                type='line',
+                marker=list(enabled=FALSE),
+                data=data,
+                mapping=hcaes(x=new_dates, y=loess, group=temporada),
+            )  %>% 
+            hc_xAxis(labels = list(format = '{value:%b %d}')) %>% 
+            hc_navigator(
+                enabled = TRUE
+            ) %>% 
+            hc_tooltip(crosshairs = TRUE, pointFormat = "x: {point.x:%b:%d} <br> y: {point.y}") %>% 
+          hc_chart(
+            backgroundColor = '#ffffff'
+          ) %>% 
+            hc_exporting(enabled=TRUE,
+                         filename=paste0(sitios[as.numeric(input$selectSite)],'_zona_',input$selectZone),
+                        formAttributes=list(target="_blank"),
+                        buttons=list(
+                          contextButton=list(
+                            theme=list(fill="white"),
+                            menuItems = list('downloadPNG')
+                            )
+                        )
+            )
+        
+
+        
+    })
+    
+    output$mapa <- renderLeaflet({
+      m <- leaflet() %>% 
+        addControlGPS(options = gpsOptions(position = "topleft", activate = TRUE, 
+                                           autoCenter = TRUE, maxZoom = 10, 
+                                           setView = TRUE)
+                      ) %>% 
+        addMeasurePathToolbar() %>% 
+        addDrawToolbar(
+          editOptions=editToolbarOptions(selectedPathOptions=selectedPathOptions())
+        )
+        # addMarkers(data = points(), group = 'markers')
+      rv$m <- m
+      return(m)
+    })
+      
+    #output$mapa2 <- renderLeaflet({
+    observe({ 
+      if (input$tabs == 'mapa'){
+        if(!is.null(input$selecdateS2)){
+          vi <- reactMap()[[1]]
+          rgb <- reactMap()[[3]]
+          mon <- st_read('data/terrenos.gpkg',layer = sitios[as.numeric(input$selectSite)])
+          ptos <- reacPts()
+          
+          
+          datMark <- data.frame(cbind(st_coordinates(ptos),zona=ptos$zona))
+          
+          cen <- st_coordinates(st_centroid(st_transform(st_as_sfc(st_bbox(vi)),4326)))
+    
+                if (!all(is.na(vi$fn))){
+                  vals <- seq(min(vi$fn,na.rm = TRUE),max(vi$fn,na.rm=TRUE),0.1)
+                  palete <- colorNumeric(colorRampPalette(brewer.pal(11,'RdYlGn'))(50),vals)
+                  
+                  leafletProxy("mapa") %>% 
+                    clearShapes() %>%
+                    clearControls() %>% 
+                    addProviderTiles(providers$OpenStreetMap,group = 'OSM') %>% 
+                    addProviderTiles(providers$Esri.WorldImagery, group = 'ESRI Satelite') %>% 
+                    addProviderTiles(providers$Stamen.Terrain, group = 'Topo') %>% 
+                    addRasterImage(as(vi,"Raster"),
+                                   colors =colorRampPalette(brewer.pal(11,'RdYlGn'))(50),
+                                   group = 'VI') %>% 
+                    addRasterRGB(rgb,r=1,g=2,b=3,group = 'RGB') %>% 
+                    addCircleMarkers(data = st_coordinates(st_zm(mon)),
+                                     group = 'Monitoreo HS',
+                                     stroke = FALSE,
+                                     radius = 3)  %>% 
+                    addMarkers(data=datMark,~X,~Y,popup = ~htmlEscape(paste0('zona : ',zona)),group = 'zonas') %>% 
+                    #fitBounds(lng1 = cen[1],lat1 = cen[2],lng2 = cen[3],lat2 = cen[4]) %>% 
+                    setView(lng = cen[1], lat = cen[2],zoom = 16) %>% 
+                    addLegend(pal = palete,values = vals,group = 'VI') %>% 
+                    addLayersControl(
+                      baseGroups = c("OSM","ESRI Satelite","Topo"),
+                      overlayGroups = c("RGB","VI","Monitoreo HS","zonas"))
+                }  else {
+                  leafletProxy("mapa") %>% 
+                    clearGroup(group = 'VI') %>% 
+                    clearGroup(group = 'RGB') %>% 
+                    clearControls() 
+                  }
+              
+            }
+        }
+  })
+})

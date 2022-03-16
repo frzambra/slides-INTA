@@ -1,0 +1,276 @@
+---
+title: "Manejo de (Sistemas) de Información Geográfica (AGRE1002) "
+subtitle: "Presentación del Curso"  
+author: 'Dr. Francisco Zambrano Bigiarini <br> Investigador en <a href="https://hemera.umayor.cl/">Hémera</a> <br> <a href="http://github.com/frzambra"><i class="fa fa-github fa-fw"></i>&nbsp; frzambra</a><br> <a href="http://twitter.com/frzambra"> <i class="fa fa-twitter fa-fw"></i>&nbsp; @frzambra</a><br> <a href="mailto:francisco.zambrano@umayor.cl"><i class="fa fa-paper-plane fa-fw"></i>&nbsp; francisco.zambrano@umayor.cl</a><br>'
+date: 10 marzo 2022 
+output:
+  xaringan::moon_reader:
+    chakra: remark-latest.min.js
+    lib_dir: libs
+    css: ["xaringan-themer.css","font-awesome-animation.min.css"]  
+    nature:
+      countIncrementalSlides: false
+    includes:
+      in_header: header.html        
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+library(xaringanthemer)
+library(xaringanExtra)
+mono_light(title_slide_background_color = 'grey',
+           background_image = 'img/logo_hemera.png',
+           background_size = '10%',
+           background_position = '95% 5%',
+           code_inline_color = 'red',
+           code_font_google =  google_font("Work Sans", "300", "300i"),
+           link_color = 'darkred' )
+
+xaringanExtra::use_fit_screen()
+xaringanExtra::use_webcam()
+xaringanExtra::use_extra_styles(
+  hover_code_line = TRUE,         #<<
+  mute_unhighlighted_code = TRUE  #<<
+)
+```
+class: center, middle
+background-image: url('img/Irrigation-Center-Pivot-Irrigation-USGS.jpg')
+background-position: center
+background-size: contain
+
+# Presentación
+
+---
+## Profesor 
+
+  - Dr. Francisco Zambrano Bigiarini
+  
+  - Ingeniero Civil Agrícola, Dr. en Ingeniería Agrícola c/m en Recursos Hídricos `(Universidad de Concepción)`
+  
+  - Investigador Académico, `Hémera` Centro de Observación de la Tierra, Universidad Mayor
+  
+  - [francisco.zambrano@umayor.cl]("mailto:francisco.zambrano@umayor.cl")
+  
+  - Camino la Piramide #5750, Edifico de Ciencias, Nivel -1.
+
+---
+![](img/logo_hemera.png)
+
+
+ [hemera.umayor.cl](https://hemera.umayor.cl/)
+
+[@hemera](https://twitter.com/hemera)
+
+**¿Qué hacemos?**
+
+Utilizamos **teledetección** para entender la dinámica del planeta.
+
+ Líneas de investigación
+
+1. Seguridad alimentaria
+2. Cobertura terrestre y cambios en las formaciones `vegetacionales`
+2. Riesgos naturales geológicos y geomorfológicos
+3. Efecto del `cambio climático` y conservación de los recursos naturales
+4. Análisis y evaluación de `desastres naturales`
+
+---
+class: center, middle
+background-image: url(gifs/esa.gif)
+background-size: contain
+background-position: 50% 50%
+
+---
+## Línea de investigación y proyectos
+
+- __Escala regional__: estudio de la `sequía (agrícola)` en Chile usando teledetección.
+
+- __Escala local__: uso de imágenes satelitales para el estudio de la `vegetación agrícola`.
+
+  - Sentinel 2 (10m, frecuencia de 5 días)
+  
+  - Landsat 7/8/9 (30m, frecuencia de 16 días)
+
+ Más información: 
+
+ [Researchgate](https://www.researchgate.net/profile/Francisco_Zambrano_Bigiarini)
+[Google Scholar](https://scholar.google.es/citations?user=mKQRdOEAAAAJ&hl=e)
+
+
+---
+## Línea de investigación y proyectos
+
+### Director de los siguientes proyectos:
+
+- [Fondo de Sequía](https://www.diariomayor.cl/ciencia-um/centro-h%C3%A9mera-u-mayor-implementar%C3%A1-primer-observatorio-de-la-sequ%C3%ADa-multiescala-para-chile.html)
+    - `Título:` A multi-scale drought observatory for Chile: an early warning system to mitigate agricultural and ecological impacts
+    - `Monto:` $300.000.000
+    - `Periodo de ejecucción:` 2022-2023
+    - `Financiamiento:` ANID
+
+- Fondecyt de Iniciación
+    - `Título:` The impact of weather variability on wheat and maize production: an improved early warning model for agricultural drought.
+    - `Monto:` $91.000.000
+    - `Periodo de ejecucción:` 2020-2023
+    - `Financiamiento:` ANID
+
+---
+## Línea de investigación y proyectos
+
+### Director de los siguientes proyectos:
+
+- [FONDEF IDeA I+D 2020](https://www.diariomayor.cl/ciencia-um/centro-hemera-u-mayor-desarrollara-sistema-satelital-para-optimizar-el-riego-de-frutales-de-kiwi-y-cerezo.html)
+    - `Título:`  Sistema Satelital para la Optimización de Riego (SatOri) 
+    - `Monto:` $200.000.000
+    - `Periodo de ejecucción:` 2022-2024
+    - `Financiamiento:` ANID
+
+---
+## Línea de investigación y proyectos
+
+### Investigador asociado en los siguientes proyectos:
+
+- FONDECYT Regular
+    - `Título:` Multivariate Drought Monitor System: Biophysical Modelling, Remote Sensing And Hydroclimatic Information For Drought Analyisis And Forecasting In Agriculture.
+    - `Institución principal:` Universidad Católica (Director Dr. Francisco Meza).
+    - `Monto:` $270.000.000
+    - `Periodo de ejecucción:` 2021-2024
+    - `Financiamiento:` ANID
+
+---
+## Línea de investigación y proyectos
+
+### Investigador asociado en los siguientes proyectos:
+
+- Proyecto Anillo ACT210007
+    - `Título:` Modeling  of  Epigenetic  GeneRegulatory Networks in sweetcherry floral buds in response to differential seasonal climate conditions.
+    - `Institución principal:` Universidad Mayor (Directora Dra. Andrea Miyasaka)
+    - `Monto:` $400.000.000
+    - `Periodo de ejecucción:` 2021-2024
+    - `Financiamiento:` ANID
+---
+## Línea de investigación y proyectos
+
+### Investigador asociado en los siguientes proyectos:
+
+- Proyecto Anillo ACT210007
+
+![](img/Anillo_el_mercurio.png)
+
+---
+### Ejemplo:
+
+```{r echo=FALSE, out.height="100%"}
+knitr::include_url("https://frzambra.shinyapps.io/fondecyt-maipo_app/",height="530px")
+```
+
+---
+class: center, middle
+
+# Descripción del curso <br> Manejo de Información Geográfica <br> (AGRE-1002)
+
+---
+## Metodología del curso
+
+El curso está diseñado con `módulos de cátedra` intercalados con `módulos de taller` utilizando el software `QGIS 3.24 (Tisler)` (www.qgis.org).
+
+## Horarios
+
+## Clases 
+  - Cátedra: Jueves 10:00 - 11:30 (HDAN-401)
+  - Taller: Jueves 11:30 - 12:50   (HHLI-211)
+
+---
+
+## Descripción del curso
+
+`Visión general` de los conceptos de los Sistema de Información Geográfica `(SIG)` y sus `componentes`. 
+
+Tanto la `teoría` como la `aplicación` de los `SIG` se enfatizarán en este curso. 
+
+
+## Objetivo del curso
+
+Que los `estudiantes aprendan` los `conceptos` para el `manejo` de sistemas de información geográfica, además del manejo del software para Sistemas de Información Geográfica `QGIS 3.24` y su `aplicación en Agronomía`.
+
+---
+
+## Objetivos de aprendizaje
+
+1. Demostrar `comprensión` y `competencia teórica` de Sistemas de Información Geográfica; 
+--
+
+
+2. Demostrar comprensión y competencia en el `registro`, `formato`, `almacenamiento` y `edición` de datos epaciales; 
+--
+
+3. Demostrar comprensión y competencia para el `diseño de mapas`; 
+--
+
+
+4. Demostrar habilidad en el uso del software SIG `QGIS 3.24 (Tisler)`. 
+
+---
+## Calendario de cátedras
+
+| Fecha               | Tema                                           |
+|---------------------|------------------------------------------------|
+| 10 marzo       | Presentación curso e introducción SIG          |
+| 24 marzo       | Modelos de datos geoespaciales                 |
+| 7 abril       | Sistemas de Coordenadas y Proyecciones         |
+| 28 abril        | Visualización de datos geoespaciales           |
+| 12 mayo        | Teledetección e imágenes aéreas                |
+| 26 mayo       | Técnicas básicas de análisis geoespacial       |
+| 16 junio       | Aplicaciones SIG en agricultura       |
+
+
+
+---
+
+## Calendario de talleres
+
+| Fecha           | Tema                                           |
+|-----------------|------------------------------------------------|
+| 17  marzo | Taller 1: Introducción a Software Libre y QGIS|
+| 31 marzo  | Taller 2: Modelos de Datos Espaciales          |
+| 14 abril  | Taller 3: Sistemas de Coordenadas y Proyecciones      |
+| 5 mayo   | Taller 4: Visualización de datos geoespaciales        |
+| 19 mayo  | Taller 5: Teledetección e Imagenes Aéreas              |
+| 2 junio  | Taller 6: Técnicas de análisis geoespacial básicas     |
+
+---
+## Evaluaciones
+
+### Resolver problemas aplicados utilizando `QGIS`
+
+
+- Promedio notas de Taller (35%)
+
+- Evaluación 1 (30%): 21 de abril
+
+- Evaluación 2 (35%): 9 de junio
+
+
+### Asistencia
+
+- La asistencia a los `talleres` es `obligatoria (100 %)`.
+
+- La asistencia a `cátedra` debe ser igual o mayor a `75 %`.
+
+---
+## Bibliografía recomendada
+
+1. Victor Olaya. Sístemas de Informacíon Geográfica. [http://volaya.github.io/libro-sig/](http://volaya.github.io/libro-sig/) (Disponible online)
+
+2. Buzai, Gustavo & Baxendale, Claudia & Humacata, Luis & Principi, Noelia. (2016). Sistemas de Información Geográfica. Cartografía temática y análisis espacial (Disponible en biblioteca). 
+
+3. Una ligera introducción a SIG. [https://docs.qgis.org/3.10/es/docs/gentle_gis_introduction/index.html](https://docs.qgis.org/3.10/es/docs/gentle_gis_introduction/index.html. (Disponible online)
+
+4. Barnali Dixon and Venkatesh Uddameri. GIS and Geocomputation for Water Resources Science and Engineering. 2016
+
+---
+class: center, middle
+
+# Link a las diapositivas de las clases
+
+[https://frzambra.github.io/ManejoSIG-UMayor/](https://frzambra.github.io/ManejoSIG-UMayor/)
